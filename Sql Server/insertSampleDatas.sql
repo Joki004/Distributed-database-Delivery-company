@@ -1,57 +1,62 @@
-------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------DC_DeliveryCustomer---------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
-
 USE DC_DeliveryCustomer;
 GO
-
--- Insert sample data into Customer table
-INSERT INTO dbo.Customer (first_name, last_name, email, number, address)
-VALUES 
-('John', 'Doe', 'john.doe@example.com', '123-456-7890', '123 Main St, Montpellier'),
-('Jane', 'Smith', 'jane.smith@example.com', '987-654-3210', '456 High St, Paris');
+--CUSTOMERS
+EXEC DC_DELIVERY_CUSTOMER_INSERT_CUSTOMER 'Alice', 'Johnson','alice.johnson@example.com', '123-456-7890','789 Pine Street';
+EXEC DC_DELIVERY_CUSTOMER_INSERT_CUSTOMER 'John', 'Doe', 'john.doe@example.com', '123-456-7890', '123 Main St, Montpellier';
+EXEC DC_DELIVERY_CUSTOMER_INSERT_CUSTOMER 'Jane', 'Smith', 'jane.smith@example.com', '987-654-3210', '456 High St, Paris';
 GO
 
--- Assuming Order and OrderDetail tables exist and have appropriate UNIQUEIDENTIFIER primary keys
--- Insert sample data into Delivery table
-INSERT INTO dbo.Delivery (OrderID, DeliveryDate, CustomerID, Status, OrderDetailID)
-VALUES 
-(NEWID(), '2024-06-15', (SELECT CustomerID FROM dbo.Customer WHERE first_name = 'John' AND last_name = 'Doe'), 'Pending', NEWID()),
-(NEWID(), '2024-06-16', (SELECT CustomerID FROM dbo.Customer WHERE first_name = 'Jane' AND last_name = 'Smith'), 'Pending', NEWID());
+--WAREHOUSES
+EXEC [dbo].[DC_DELIVERY_CUSTOMER_INSERT_WAREHOUSE] 'Central Warehouse', '456 Industrial Rd', 1,10000, 5000,100,10000;
+EXEC [dbo].[DC_DELIVERY_CUSTOMER_INSERT_WAREHOUSE] 'Toulouse Warehouse', '456 Toulouse St, Toulouse', 0, 1500, 1200, 150, 1500;
+EXEC [dbo].[DC_DELIVERY_CUSTOMER_INSERT_WAREHOUSE] 'Marseille Warehouse', '789 Marseille St, Marseille', 1, 1800, 1300, 180, 1800
 GO
+
+--ORDERS AND ORDERSDETAILS
+DECLARE @TodayDate DATE = GETDATE();
+DECLARE @OrderDetails OrderDetailsType;
+INSERT INTO @OrderDetails (ProductDescription, Quantity, PackageDate, WarehouseID, Status,Type, Dimensions, Refrigerated)
+VALUES ('Samsung Galaxy S24', 10, GETDATE(), 1, 'Pending','Standard', '10x10x10', 0),
+       ('Iphone 12', 5, GETDATE(), 2, 'Pending','Priority', '20x20x20', 1);
+EXEC DC_DELIVERY_CUSTOMER_INSERT_ORDER @TodayDate, 1, 'Pending',@ExpectedDeliveryDate ,@OrderDetails;
+
+DECLARE @OrderDetails2 OrderDetailsType;
+INSERT INTO @OrderDetails2 (ProductDescription, Quantity, PackageDate, WarehouseID, Status,Type, Dimensions, Refrigerated)
+VALUES ('Nike', 2,@TodayDate, 1, 'Pending','Standard', '10x10x10', 0),
+       ('Addidas', 9, @TodayDate, 2, 'Pending','Priority', '20x20x20', 0);
+EXEC DC_DELIVERY_CUSTOMER_INSERT_ORDER @TodayDate, 2, 'Pending',@ExpectedDeliveryDate ,@OrderDetails2;
+GO
+
+--DELIVERIES
+DECLARE @ExpectedDeliveryDate DATE = DATEADD(DAY, 7, GETDATE())
+EXEC DC_DELIVERY_CUSTOMER_INSERT_DELIVERY 1,6,'Penging',@ExpectedDeliveryDate;
+EXEC DC_DELIVERY_CUSTOMER_INSERT_DELIVERY 2,7,'Penging',@ExpectedDeliveryDate;
+GO
+
+
 
 select * from Customer;
 select * from Delivery;
+SELECT * FROM DC_WarehouseOrder.DBO."Order"
 
-------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------DC_WarehouseOrder	----------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
 USE DC_WarehouseOrder;
 GO
 -- Insert sample data into Warehouse table
-INSERT INTO Warehouse (WarehouseName, Address, IsRefrigerated, Capacity, QuantityAvailable, MinimumStockLevel, MaximumStockLevel)
-VALUES 
-('Paris Warehouse', '123 Paris St, Paris', 0, 2000, 1500, 200, 2000),
-('Toulouse Warehouse', '456 Toulouse St, Toulouse', 0, 1500, 1200, 150, 1500),
-('Marseille Warehouse', '789 Marseille St, Marseille', 1, 1800, 1300, 180, 1800);
-GO
--- Insert Orders
--- Use existing UUIDs for CustomerID from SQL Server 1 for demonstration
-INSERT INTO "Order" (OrderDate, CustomerID, Status, ExpectedDeliveryDate)
-VALUES 
-('2024-06-10', (SELECT CustomerID FROM [DC_DeliveryCustomer].dbo.Customer WHERE first_name = 'John' AND last_name = 'Doe'), 'Pending', '2024-06-15'),
-('2024-06-11', (SELECT CustomerID FROM [DC_DeliveryCustomer].dbo.Customer WHERE first_name = 'Jane' AND last_name = 'Smith'), 'Pending', '2024-06-16');
-GO
--- Insert Order Details
-INSERT INTO OrderDetail (OrderID, ProductDescription, Quantity, PackageDate, WarehouseID, Status, Type, Dimensions, Refrigerated)
-VALUES 
-((SELECT OrderID FROM "Order" WHERE CustomerID = (SELECT CustomerID FROM [DC_DeliveryCustomer].dbo.Customer WHERE first_name = 'John' AND last_name = 'Doe')), 'Product A', 10, '2024-06-11', (SELECT WarehouseID FROM Warehouse WHERE WarehouseName = 'Paris Warehouse'), 'Pending', 'Priority', '10x10x10', 0),
-((SELECT OrderID FROM "Order" WHERE CustomerID = (SELECT CustomerID FROM [DC_DeliveryCustomer].dbo.Customer WHERE first_name = 'Jane' AND last_name = 'Smith')), 'Product B', 5, '2024-06-12', (SELECT WarehouseID FROM Warehouse WHERE WarehouseName = 'Toulouse Warehouse'), 'Pending', 'Standard', '20x20x20', 0);
+USE DC_DeliveryCustomer
 GO
 
+
+USE DC_WarehouseOrder;
+
+USE DC_WarehouseOrder;
+GO
+
+select * from DC_WarehouseOrder.DBO."Order" where OrderID = 6 and CustomerID = 1;
 select * from Warehouse;
 select * from "Order";
 select * from OrderDetail;
+DELETE FROM "Order" WHERE CustomerID = 1;
+DELETE FROM OrderDetail WHERE WarehouseID = 1;
 
 SELECT 
     c.first_name, 
