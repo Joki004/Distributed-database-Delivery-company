@@ -19,6 +19,8 @@ EXEC sp_addlinkedsrvlogin
     @rmtuser = 'SCOTT', 
     @rmtpassword = '12345';
 GO
+EXEC sp_serveroption @server = 'OracleDB', @optname = 'rpc', @optvalue = 'true';
+EXEC sp_serveroption @server = 'OracleDB', @optname = 'rpc out', @optvalue = 'true';
 
 -- Test the linked server
 EXEC sp_testlinkedserver N'OracleDB';

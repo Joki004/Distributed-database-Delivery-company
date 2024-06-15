@@ -1,0 +1,14 @@
+CREATE OR REPLACE
+PACKAGE BODY EMPLOYEE_PACKAGE AS
+
+  PROCEDURE INSERT_EMPLOYEE (
+        I_EmployeeName IN VARCHAR2,
+        I_Position IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO EMPLOYEE (EmployeeName, Position)
+        VALUES (I_EmployeeName, I_Position);
+  END INSERT_EMPLOYEE;
+
+END EMPLOYEE_PACKAGE;
+/

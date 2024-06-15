@@ -15,14 +15,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Insert a new customer into the Customer table
     INSERT INTO Customer (first_name, last_name, email, number, address)
     VALUES (@FirstName, @LastName, @Email, @Number, @Address);
 END;
 GO
 
 --DELIVERY
--- Use the DC_DeliveryCustomer database
 USE DC_DeliveryCustomer;
 GO
 
@@ -132,7 +130,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Check if the CustomerID exists in the DC_DeliveryCustomer database
     DECLARE @SQL NVARCHAR(MAX);
     DECLARE @CustomerExists INT;
 
@@ -145,7 +142,6 @@ BEGIN
         RETURN;
     END;
 
-    -- Check if the WarehouseID exists in the DC_WarehouseOrder database for each detail
     DECLARE @WarehouseExists INT;
     DECLARE @WarehouseID INT;
 
@@ -182,7 +178,6 @@ BEGIN
     EXEC sp_executesql @SQL, N'@OrderDate DATE, @CustomerID INT, @StatusOrder VARCHAR(100), @ExpectedDeliveryDate DATE', 
                        @OrderDate, @CustomerID, @StatusOrder, @ExpectedDeliveryDate;
 
-    -- Retrieve the new OrderID from the remote server
     SET @SQL = N'SELECT @OrderID = IDENT_CURRENT(''[DC_WarehouseOrder].dbo.[Order]'')';
     DECLARE @OrderID INT;
     EXEC sp_executesql @SQL, N'@OrderID INT OUTPUT', @OrderID OUTPUT;
@@ -228,6 +223,93 @@ BEGIN
     DEALLOCATE detailCursor;
 END;
 GO
+
+
+--EMPLOYEES
+USE DC_DeliveryCustomer;
+GO
+CREATE OR ALTER PROCEDURE ORACLE_INSERT_EMPLOYEE
+    @EmployeeName VARCHAR(100),
+    @Position VARCHAR(100)
+AS
+BEGIN
+	SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @SQL NVARCHAR(MAX);
+    DECLARE @EmployeeNameEscaped NVARCHAR(100);
+    DECLARE @PositionEscaped NVARCHAR(100);
+
+    SET @EmployeeNameEscaped = REPLACE(@EmployeeName, '''', '''''');
+    SET @PositionEscaped = REPLACE(@Position, '''', '''''');
+
+    SET @SQL = N'BEGIN EMPLOYEE_PACKAGE.INSERT_EMPLOYEE(''' + @EmployeeNameEscaped + ''', ''' + @PositionEscaped + '''); END;';
+
+	EXEC (@SQL) AT OracleDB;
+
+    PRINT 'Employee inserted successfully into Oracle database.';
+END;
+GO
+
+
+--ROUTES
+USE DC_DeliveryCustomer;
+GO
+CREATE OR ALTER PROCEDURE ORACLE_INSERT_ROUTE
+    @RouteName VARCHAR(100),
+    @SourceWarehouseID INT,
+    @DestinationWarehouseID INT,
+    @AssignedEmployeeID INT,
+    @Time FLOAT,
+    @Distance FLOAT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @SQL NVARCHAR(MAX);
+    DECLARE @RouteNameEscaped NVARCHAR(100);
+    DECLARE @Cost FLOAT;
+
+    SET @Cost = (@Distance / 6) * 3.5;
+
+    SET @RouteNameEscaped = REPLACE(@RouteName, '''', '''''');
+
+    SET @SQL = N'BEGIN ROUTES_PACKAGE.INSERT_ROUTE(''' 
+                + @RouteNameEscaped + ''', '
+                + CAST(@SourceWarehouseID AS NVARCHAR) + ', '
+                + CAST(@DestinationWarehouseID AS NVARCHAR) + ', '
+                + CAST(@AssignedEmployeeID AS NVARCHAR) + ', '
+                + CAST(@Cost AS NVARCHAR) + ', '
+                + CAST(@Time AS NVARCHAR) + ', '
+                + CAST(@Distance AS NVARCHAR) + '); END;';
+
+    EXEC (@SQL) AT OracleDB;
+
+    PRINT 'Route inserted successfully into Oracle database.';
+END;
+GO
+
+--CREATE ITINERARY
+CREATE OR ALTER PROCEDURE SelectBestRoute
+(
+    @SourceWarehouseID NUMBER,
+    @DestinationWarehouseID NUMBER,
+    @Priority VARCHAR2(10) -- 'COST' or 'TIME'
+)
+AS
+BEGIN
+    PRINT 'WORKING ON IT';
+END;
+GO
+
+
+
+
+
+
+
+		
 
 
 
