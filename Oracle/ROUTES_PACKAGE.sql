@@ -4,9 +4,17 @@ CREATE OR REPLACE PACKAGE ROUTES_PACKAGE AS
     SourceWarehouseID NUMBER,
     DestinationWarehouseID NUMBER,
     AssignedEmployeeID NUMBER,
+    VehicleID NUMBER,
     Cost NUMBER,
     Time NUMBER,
     Distance NUMBER
+    
+  );
+  
+    PROCEDURE INSERT_ROUTE_SCHEDULE (
+    RouteID NUMBER,
+    DepartureTime VARCHAR2,
+    ArrivalTime VARCHAR2
   );
 END ROUTES_PACKAGE;
-
+/

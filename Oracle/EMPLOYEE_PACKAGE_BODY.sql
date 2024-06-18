@@ -6,7 +6,7 @@ PACKAGE BODY EMPLOYEE_PACKAGE AS
         I_Position IN VARCHAR2
     ) AS
     BEGIN
-        INSERT INTO EMPLOYEE (EmployeeName, Position)
+        INSERT INTO EMPLOYEE (employee_name, Position)
         VALUES (I_EmployeeName, I_Position);
   END INSERT_EMPLOYEE;
 

@@ -1,8 +1,8 @@
 CREATE OR REPLACE 
 PACKAGE EMPLOYEE_PACKAGE AS 
 
-   PROCEDURE InsertEmployee (
-        I_EmployeeName IN VARCHAR2,
+   PROCEDURE INSERT_EMPLOYEE (
+        Employee IN VARCHAR2,
         I_Position IN VARCHAR2
     );
 

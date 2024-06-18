@@ -6,6 +6,7 @@ PACKAGE BODY ROUTES_PACKAGE AS
     SourceWarehouseID NUMBER,
     DestinationWarehouseID NUMBER,
     AssignedEmployeeID NUMBER,
+    VehicleID NUMBER,
     Cost NUMBER,
     Time NUMBER,
     Distance NUMBER
@@ -13,20 +14,22 @@ PACKAGE BODY ROUTES_PACKAGE AS
   BEGIN
     BEGIN
     INSERT INTO Route (
-      RouteID,
-      RouteName,
-      SourceWarehouseID,
-      DestinationWarehouseID,
-      AssignedEmployeeID,
-      Cost,
-      Time,
-      Distance
+      route_id,
+      route_name,
+      from_warehouse_id,
+      to_warehouse_id ,
+      assigned_employee_id,
+      vehicle_id,
+      cost,
+      time,
+      distance
     ) VALUES (
       seq_route_id.NEXTVAL,
       RouteName,
       SourceWarehouseID,
       DestinationWarehouseID,
       AssignedEmployeeID,
+      VehicleID,
       Cost,
       Time,
       Distance
@@ -34,4 +37,24 @@ PACKAGE BODY ROUTES_PACKAGE AS
     END;
   END INSERT_ROUTE;
 
+
+    PROCEDURE INSERT_ROUTE_SCHEDULE (
+        RouteID NUMBER,
+        DepartureTime VARCHAR2,
+        ArrivalTime VARCHAR2
+      ) AS
+      BEGIN
+        INSERT INTO ROUTESCHEDULE (
+          route_schedule_id,
+          route_id,
+          departure_time,
+          arrival_time
+        ) VALUES (
+          seq_route_schedule_id.NEXTVAL,
+          RouteID,
+          DepartureTime,
+          ArrivalTime
+        );
+      END INSERT_ROUTE_SCHEDULE;
 END ROUTES_PACKAGE;
+/
